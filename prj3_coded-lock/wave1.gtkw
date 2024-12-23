@@ -1,0 +1,46 @@
+[*]
+[*] GTKWave Analyzer v3.3.103 (w)1999-2019 BSI
+[*] Mon Dec 23 05:46:21 2024
+[*]
+[dumpfile] "/mnt/ssd2/lao/vlsi_prj/prj3_coded-lock/wave.vcd"
+[dumpfile_mtime] "Mon Dec 23 05:43:28 2024"
+[dumpfile_size] 4255
+[savefile] "/mnt/ssd2/lao/vlsi_prj/prj3_coded-lock/wave1.gtkw"
+[timestart] 0
+[size] 2560 1313
+[pos] -102 -101
+*-17.073259 512900 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] tb_lock.
+[sst_width] 228
+[signals_width] 239
+[sst_expanded] 1
+[sst_vpaned_height] 389
+@28
+tb_lock.test_lock.clk
+tb_lock.test_lock.clr
+@22
+tb_lock.test_lock.din[3:0]
+@28
+tb_lock.test_lock.confirm
+tb_lock.test_lock.cancel
+@22
+tb_lock.test_lock.present_state_s[3:0]
+@28
+[color] 2
+tb_lock.test_lock.unlock_ok
+@22
+[color] 2
+tb_lock.test_lock.open_time[5:0]
+tb_lock.test_lock.wrong_count[5:0]
+@28
+[color] 3
+tb_lock.test_lock.locking
+@22
+[color] 3
+tb_lock.test_lock.lock_time[5:0]
+tb_lock.test_lock.present_state_t[4:0]
+@29
+[color] 7
+tb_lock.test_lock.reset_ok
+[pattern_trace] 1
+[pattern_trace] 0
