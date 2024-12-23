@@ -1,5 +1,8 @@
 `timescale 1ns / 1ps
 
+`define xortest
+// `define luitest
+
 
 
 module top (
@@ -55,7 +58,7 @@ module riscvsingle (
 	wire Jump;
 	wire Zero;
 	wire [1:0] ResultSrc;
-	wire [1:0] ImmSrc;
+	wire [2:0] ImmSrc;
 	wire [2:0] ALUControl;
 	wire PCSrc;
 
@@ -103,7 +106,7 @@ module controller (
 	output wire ALUSrc,
 	output wire RegWrite,
 	output wire Jump,
-	output wire [1:0] ImmSrc,
+	output wire [2:0] ImmSrc,
 	output wire [2:0] ALUControl
 );
 
@@ -141,20 +144,21 @@ module maindec (
 	output wire ALUSrc,
 	output wire RegWrite,
 	output wire Jump,
-	output wire [1:0] ImmSrc,
+	output wire [2:0] ImmSrc,
 	output wire [1:0] ALUOp
 );
 
-	reg [10:0] controls;
+	reg [11:0] controls;
 	assign {RegWrite, ImmSrc, ALUSrc, MemWrite, ResultSrc, Branch, ALUOp, Jump} = controls;
 	always @(*)
 		case (op)
-			7'b0000011: controls = 11'b10010010000;
-			7'b0100011: controls = 11'b00111000000;
-			7'b0110011: controls = 11'b1xx00000100;
-			7'b1100011: controls = 11'b01000001010;
-			7'b0010011: controls = 11'b10010000100;
-			7'b1101111: controls = 11'b11100100001;
+			7'b0000011: controls = 12'b100010010000;//lw
+			7'b0100011: controls = 12'b001011000000;//sw
+			7'b0110011: controls = 12'b1xxx00000100;//R-Type
+			7'b1100011: controls = 12'b010000001010;//beq
+			7'b0010011: controls = 12'b100010000100;//I-Type----ALUSrc=1?
+			7'b1101111: controls = 12'b111000100001;//jal-------ResultSrc=10?
+			7'b0110111: controls = 12'b111100110000;//lui-------------------------------------------------------------------------------
 			default: controls = 11'bxxxxxxxxxxx;
 		endcase
 endmodule
@@ -183,6 +187,7 @@ module aludec (
 					3'b010: ALUControl = 3'b101;
 					3'b110: ALUControl = 3'b011;
 					3'b111: ALUControl = 3'b010;
+					3'b100: ALUControl = 3'b100;// ALUOp add funct3 == 100-------------------------------------------------------------
 					default: ALUControl = 3'bxxx;
 				endcase
 		endcase
@@ -195,7 +200,7 @@ module datapath (
 	input wire PCSrc,
 	input wire ALUSrc,
 	input wire RegWrite,
-	input wire [1:0] ImmSrc,
+	input wire [2:0] ImmSrc,
 	input wire [2:0] ALUControl,
 	output wire Zero,
 	output wire [31:0] PC,
@@ -275,6 +280,7 @@ module datapath (
 		.d0(ALUResult),
 		.d1(ReadData),
 		.d2(PCPlus4),
+		.d3(ImmExt),// output mux add "11" == immext-------------------------------------------------------------------------------------
 		.s(ResultSrc),
 		.y(Result)
 	);
@@ -311,16 +317,17 @@ endmodule
 
 module extend (
 	input wire [31:7] instr,
-	input wire [1:0] immsrc,
+	input wire [2:0] immsrc,
 	output reg [31:0] immext
 );
 
 	always @(*)
 		case (immsrc)
-			2'b00: immext = {{20 {instr[31]}}, instr[31:20]};
-			2'b01: immext = {{20 {instr[31]}}, instr[31:25], instr[11:7]};
-			2'b10: immext = {{20 {instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0};
-			2'b11: immext = {{12 {instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0};
+			3'b000: immext = {{20 {instr[31]}}, instr[31:20]};
+			3'b010: immext = {{20 {instr[31]}}, instr[31:25], instr[11:7]};
+			3'b100: immext = {{20 {instr[31]}}, instr[7], instr[30:25], instr[11:8], 1'b0};
+			3'b110: immext = {{12 {instr[31]}}, instr[19:12], instr[20], instr[30:21], 1'b0};
+			3'b111: immext = {instr[31:12], 12'b0};// add code "111" == lui------------------------------------------------------------
 			default: immext = 32'bx;
 		endcase
 endmodule
@@ -355,12 +362,13 @@ module mux3 (
 	input wire [WIDTH - 1:0] d0,
 	input wire [WIDTH - 1:0] d1,
 	input wire [WIDTH - 1:0] d2,
+	input wire [WIDTH - 1:0] d3,//add d3-------------------------------------------------------------------------------------------------
 	input wire [1:0] s,
 	output wire [WIDTH - 1:0] y
 );
 	parameter WIDTH = 8;
 
-	assign y = (s[1] ? d2 : (s[0] ? d1 : d0));
+	assign y = (s[1] ? (s[0] ? d3:d2) : (s[0] ? d1:d0));//四项判断-----------------------------------------------------------------------
 endmodule
 
 module imem (
@@ -369,7 +377,14 @@ module imem (
 );
 
 	reg [31:0] RAM [63:0];
-	initial $readmemh("G:/FPGA_prj/riscv_single_verilog/riscvtest.txt", RAM);
+
+`ifdef xortest
+	initial $readmemh("/mnt/ssd2/lao/vlsi_prj/prj1_riscvCPU/xortest.txt", RAM);
+`elsif luitest
+	initial $readmemh("/mnt/ssd2/lao/vlsi_prj/prj1_riscvCPU/luitest.txt", RAM);
+`else 
+	initial $readmemh("/mnt/ssd2/lao/vlsi_prj/prj1_riscvCPU/riscvtest.txt", RAM);
+`endif
 	assign rd = RAM[a[31:2]];
 endmodule
 
