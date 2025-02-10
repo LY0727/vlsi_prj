@@ -34,6 +34,8 @@
 // OF DOUBT, NO PATENT LICENSES ARE BEING LICENSED UNDER THIS LICENSE AGREEMENT.//
 //////////////////////////////////////////////////////////////////////////////////
 
+// liuao,???test??
+`include "config.vh"
 
 module AHBLITE_SYS(
 	//CLOCKS & RESET
@@ -108,12 +110,19 @@ assign 				HRESP = 1'b0;
 //CM0-DS INTERRUPT SIGNALS  
 assign 				IRQ = {13'b0000_0000_0000_00,Int_uart,Int_timer,Int};
 //assign 			LED[7] = LOCKUP;
-clk_wiz_0 Inst_clk_wiz_0 (
-	.clk_in1(CLK),
-	.clk_out1(HCLK),
-	.reset(RESET),
-	.locked(HRESETn)
-);               
+
+// Clock & Reset Generation
+`ifdef VIVADO
+	clk_wiz_0 Inst_clk_wiz_0 (
+		.clk_in1(CLK),
+		.clk_out1(HCLK),
+		.reset(RESET),
+		.locked(HRESETn)
+	);               
+`else
+	assign HCLK = CLK;
+	assign HRESETn = ~RESET;
+`endif
 
 //AHBLite MASTER --> CM0-DS
 

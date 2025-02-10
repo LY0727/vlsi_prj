@@ -46,12 +46,65 @@ module AHB2MEM
 
 // Memory Array  
   reg [31:0] memory[0:(2**(MEMWIDTH-2)-1)];
-  
-  initial
-  begin
-	(*rom_style="block"*) $readmemh("code.hex", memory);
-  end
 
+//  Load the Memory with the appropriate HEX file
+  // if VIVADO is defined, then use the following code
+`ifdef VIVADO
+  // Synthesis directives   (* ram_style = "block" *)
+  `ifdef M0_LED
+    initial
+    begin
+    (*rom_style="block"*) $readmemh("/mnt/ssd2/lao/vlsi_prj/prj2_SOC/hex_s_code/M0_LED.hex", memory);
+    end
+  `elsif M0_SEG7
+    initial
+    begin
+    (*rom_style="block"*) $readmemh("/mnt/ssd2/lao/vlsi_prj/prj2_SOC/hex_s_code/M0_SEG7.hex", memory);
+    end
+  `elsif M0_TIMER
+    initial
+    begin
+    (*rom_style="block"*) $readmemh("/mnt/ssd2/lao/vlsi_prj/prj2_SOC/hex_s_code/M0_TIMER.hex", memory);
+    end
+  `elsif M0_UART
+    initial
+    begin
+    (*rom_style="block"*) $readmemh("/mnt/ssd2/lao/vlsi_prj/prj2_SOC/hex_s_code/M0_UART.hex", memory);
+    end
+  `else 
+    initial
+    begin
+    (*rom_style="block"*) $readmemh("/mnt/ssd2/lao/vlsi_prj/prj2_SOC/hex_s_code/CODE.hex", memory);
+    end
+  `endif
+`else
+  `ifdef M0_LED
+    initial
+    begin
+    $readmemh("/mnt/ssd2/lao/vlsi_prj/prj2_SOC/hex_s_code/M0_LED.hex", memory);
+    end
+  `elsif M0_SEG7
+    initial
+    begin
+    $readmemh("/mnt/ssd2/lao/vlsi_prj/prj2_SOC/hex_s_code/M0_SEG7.hex", memory);
+    end
+  `elsif M0_TIMER
+    initial
+    begin
+    $readmemh("/mnt/ssd2/lao/vlsi_prj/prj2_SOC/hex_s_code/M0_TIMER.hex", memory);
+    end
+  `elsif M0_UART
+    initial
+    begin
+    $readmemh("/mnt/ssd2/lao/vlsi_prj/prj2_SOC/hex_s_code/M0_UART.hex", memory);
+    end
+  `else 
+    initial
+    begin
+    $readmemh("/mnt/ssd2/lao/vlsi_prj/prj2_SOC/hex_s_code/CODE.hex", memory);
+    end
+  `endif
+`endif
 // Sample the Address Phase   
   always @(posedge HCLK or negedge HRESETn)
   begin
